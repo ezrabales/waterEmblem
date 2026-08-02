@@ -3,109 +3,275 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Water Emblem — rules visualiser</title>
+<title>Water Emblem — rules and design notes</title>
 <style>
   :root{
-    --bg:#12151a; --panel:#1c2027; --edge:#333b46; --ink:#e6e4df; --dim:#8b93a0;
-    --p0:#5b8dd9; --p1:#d95b5b; --gold:#c9a227;
+    --bg:#101318; --panel:#191d24; --panel-2:#20242c; --edge:#2f3742;
+    --ink:#e7e5e0; --dim:#8a929f; --dimmer:#5c6470; --gold:#c9a227;
+    --measure:64ch;
   }
   *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
   body{
-    margin:0;padding:28px 24px;background:var(--bg);color:var(--ink);
-    font:14px/1.5 ui-sans-serif,system-ui,sans-serif;
+    margin:0;padding:0 24px 96px;background:var(--bg);color:var(--ink);
+    font:15.5px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   }
-  h1{font:600 14px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin:0 0 4px}
-  .sub{color:var(--dim);font-size:13px;margin:0 0 20px}
-  .wrap{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap}
+  .shell{max-width:1180px;margin:0 auto}
 
+  header{padding:40px 0 26px;border-bottom:1px solid var(--edge);margin-bottom:28px}
+  .eyebrow{font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--dimmer);margin:0 0 12px}
+  h1{margin:0;font:600 34px/1.1 ui-serif,Georgia,"Times New Roman",serif;
+     letter-spacing:-.01em;text-wrap:balance}
+  header p{margin:10px 0 0;max-width:var(--measure);color:var(--dim);font-size:15px}
+
+  .toolbar{
+    display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end;
+    padding:14px 16px;margin-bottom:22px;
+    background:var(--panel);border:1px solid var(--edge);border-radius:6px;
+  }
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field > span{font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--dimmer)}
+  select,button{
+    all:unset;cursor:pointer;padding:7px 11px;border:1px solid var(--edge);
+    border-radius:4px;background:var(--panel-2);color:var(--ink);
+    font:500 13px/1 ui-sans-serif,sans-serif;
+  }
+  select{padding-right:26px;background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),
+    linear-gradient(135deg,var(--dim) 50%,transparent 50%);
+    background-position:calc(100% - 14px) 12px,calc(100% - 9px) 12px;
+    background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+  button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
+  button:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .note{color:var(--dimmer);font-size:12.5px;max-width:46ch}
+
+  .wrap{display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap}
   .board{
-    display:grid;gap:1px;background:#0b0d10;padding:1px;
+    display:grid;gap:1px;background:#0a0c10;padding:1px;
     border:1px solid var(--edge);border-radius:4px;
-    grid-template-columns:repeat(20,28px);
-    grid-auto-rows:28px;
-    user-select:none;
+    grid-template-columns:repeat(20,30px);grid-auto-rows:30px;user-select:none;
   }
   .cell{position:relative;display:grid;place-items:center;cursor:pointer}
-  .t-plain{background:#39433a} .t-road{background:#5c5340}
-  .t-forest{background:#233a26} .t-hill{background:#4a4632}
-  .t-mountain{background:#4a4a52} .t-water{background:#1e3a56;cursor:not-allowed}
+  .t-plain{background:#39433a}.t-road{background:#5c5340}.t-forest{background:#22392a}
+  .t-hill{background:#4a4632}.t-mountain{background:#484850}.t-water{background:#1d3752;cursor:not-allowed}
 
-  .cell.reach::after{content:"";position:absolute;inset:0;background:#5b8dd9;opacity:.45}
-  .cell.atk::before{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 2px #d95b5b;opacity:.75;z-index:2}
-  .cell.threat::after{content:"";position:absolute;inset:0;background:#d95b5b;opacity:.22}
-  .cell.path::after{content:"";position:absolute;inset:0;background:#8fc4ff;opacity:.7}
-  .cell.sel{outline:2px solid var(--gold);outline-offset:-2px;z-index:4}
+  .ov{position:absolute;inset:0;pointer-events:none}
+  .ov.move{z-index:1}.ov.threat{z-index:1}.ov.atk{z-index:2}.ov.path{z-index:3}
+  .cell.sel{outline:2px solid var(--gold);outline-offset:-2px;z-index:5}
 
-  .unit{
-    position:relative;z-index:3;width:20px;height:20px;border-radius:50%;
+  .unit{position:relative;z-index:4;width:21px;height:21px;border-radius:50%;
     display:grid;place-items:center;font:700 11px/1 ui-sans-serif,sans-serif;
-    color:#0d1014;border:1px solid rgba(0,0,0,.5);
-  }
-  .u0{background:var(--p0)} .u1{background:var(--p1)}
-  .unit.done{filter:grayscale(1) brightness(.6)}
+    color:#0c0f13;border:1px solid rgba(0,0,0,.55);box-shadow:0 1px 2px rgba(0,0,0,.5)}
+  .unit.done{filter:grayscale(1) brightness(.55)}
 
-  .side{width:300px;display:flex;flex-direction:column;gap:16px}
-  .card{background:var(--panel);border:1px solid var(--edge);border-radius:5px;padding:14px 16px}
-  .card h2{font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
+  .side{width:296px;display:flex;flex-direction:column;gap:14px}
+  .card{background:var(--panel);border:1px solid var(--edge);border-radius:5px;padding:13px 15px}
+  .card h2{font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--dimmer);margin:0 0 10px}
   .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-variant-numeric:tabular-nums}
   .kv dt{color:var(--dim);font-size:12.5px}
-  .kv dd{margin:0;font:600 13px/1.4 ui-monospace,Menlo,monospace}
-  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--dim)}
-  .legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
-  button{
-    all:unset;cursor:pointer;padding:6px 11px;border:1px solid var(--edge);border-radius:4px;
-    font:600 12px/1 ui-sans-serif,sans-serif;color:var(--ink);background:#232830;
-  }
-  button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
-  .hint{color:var(--dim);font-size:12.5px}
+  .kv dd{margin:0;font:600 13px/1.45 ui-monospace,Menlo,monospace}
+  .legend{display:flex;flex-direction:column;gap:7px;font-size:12.5px;color:var(--dim)}
+  .legend div{display:flex;align-items:center;gap:8px}
+  .sw{width:16px;height:16px;border-radius:3px;flex:none;border:1px solid rgba(255,255,255,.14)}
+  .hint{color:var(--dimmer);font-size:12.5px}
+  .tune{display:flex;flex-direction:column;gap:9px}
+  .tune .grp{font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--dimmer);margin-top:4px}
+  .tune label{display:grid;grid-template-columns:1fr auto auto;gap:6px;
+    align-items:center;font-size:12.5px;color:var(--dim)}
+  .tune input{all:unset;width:38px;padding:3px 6px;text-align:center;
+    border:1px solid var(--edge);border-radius:3px;background:var(--panel-2);
+    color:var(--ink);font:600 12.5px/1 ui-monospace,Menlo,monospace}
+  .tune input:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+  .tune input.imp{color:var(--dimmer)}
+
+  /* ---------- write-up ---------- */
+  article{margin-top:60px;padding-top:36px;border-top:1px solid var(--edge)}
+  article h2{margin:44px 0 14px;font:600 23px/1.25 ui-serif,Georgia,serif;text-wrap:balance}
+  article h2:first-of-type{margin-top:0}
+  article h3{margin:28px 0 8px;font:600 15px/1.3 ui-sans-serif,sans-serif;letter-spacing:.01em}
+  article p,article li{max-width:var(--measure);color:#cfcdc8}
+  article p{margin:0 0 14px}
+  article ul{margin:0 0 16px;padding-left:20px}
+  article li{margin-bottom:7px}
+  article strong{color:var(--ink);font-weight:600}
+  article code{font:13px/1 ui-monospace,Menlo,monospace;background:#20242c;
+    padding:2px 5px;border-radius:3px;color:#d9d6cf}
+  article pre{max-width:var(--measure);overflow-x:auto;background:#171b21;
+    border:1px solid var(--edge);border-radius:5px;padding:12px 14px;margin:0 0 16px}
+  article pre code{background:none;padding:0;line-height:1.55}
+  blockquote{margin:0 0 16px;padding:2px 0 2px 16px;border-left:2px solid var(--gold);
+    max-width:var(--measure);color:var(--dim);font-style:italic}
+  .why{border-left:2px solid #2fb3a8;padding-left:14px;margin:0 0 16px}
+  .why b{color:#4ecdc4;font-weight:600;letter-spacing:.03em;font-size:12px;
+    text-transform:uppercase;display:block;margin-bottom:3px}
+  table{border-collapse:collapse;margin:0 0 18px;font-size:13.5px;
+    font-variant-numeric:tabular-nums;display:block;overflow-x:auto;max-width:100%}
+  th,td{border:1px solid var(--edge);padding:6px 11px;text-align:left;white-space:nowrap}
+  th{background:var(--panel);font-weight:600;color:var(--dim);font-size:11.5px;
+    letter-spacing:.08em;text-transform:uppercase}
+  .todo{color:var(--dim)}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--edge);
+    color:var(--dimmer);font-size:12.5px}
 </style>
 </head>
 <body>
+<div class="shell">
 
-<h1>Water Emblem</h1>
-<p class="sub">Rules visualiser. Everything below is computed live by <code>shared/movement.js</code> and <code>shared/combat.js</code> against <code>shared/fixtures.js</code>. No game server, no mock data.</p>
+<header>
+  <p class="eyebrow">Water Emblem</p>
+  <h1>Rules, live and legible</h1>
+  <p>Everything on this page is computed by the same modules the game runs on, against a fixed demo map. If an overlay looks wrong here, the rules are wrong. Below the board is a written record of every design decision and why it was made.</p>
+</header>
+
+<div class="toolbar">
+  <label class="field"><span>Palette</span><select id="pal"></select></label>
+  <label class="field"><span>You are</span><select id="side">
+    <option value="0">Player 1 (west)</option><option value="1">Player 2 (east)</option>
+  </select></label>
+  <div class="field"><span>Overlays</span><div style="display:flex;gap:8px">
+    <button id="tPat" aria-pressed="true">Patterns</button>
+    <button id="tAtk" aria-pressed="true">Attack range</button>
+    <button id="tThreat" aria-pressed="false">Threat</button>
+    <button id="tGhost" aria-pressed="false" title="Threat recomputed as if your units were not on the map">If I moved away</button>
+  </div></div>
+  <p class="note" id="palNote"></p>
+</div>
 
 <div class="wrap">
   <div id="board" class="board"></div>
-
   <div class="side">
-    <div class="card">
-      <h2>Selected</h2>
-      <div id="sel" class="hint">Click a unit.</div>
-    </div>
+    <div class="card"><h2>Selected</h2><div id="sel" class="hint">Click a unit.</div></div>
+    <div class="card"><h2>Legend</h2><div class="legend" id="legend"></div></div>
+    <div class="card" id="fcCard" style="display:none"><h2>Combat forecast</h2><div id="fc"></div></div>
+    <div class="card"><h2>Terrain</h2><div class="legend" id="terrainLegend"></div>
+      <p class="hint" style="margin:9px 0 0">Cost is foot / horse.</p></div>
 
-    <div class="card">
-      <h2>Overlays</h2>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button id="tThreat" aria-pressed="false">Threat vs P0</button>
-        <button id="tAtk" aria-pressed="true">Attack range</button>
-      </div>
-      <div class="legend" style="margin-top:12px">
-        <span><i style="background:#5b8dd9;opacity:.6"></i>can move</span>
-        <span><i style="box-shadow:inset 0 0 0 2px #d95b5b"></i>can attack</span>
-        <span><i style="background:#d95b5b;opacity:.35"></i>threatened</span>
-        <span><i style="background:#8fc4ff"></i>path</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Terrain</h2>
-      <div class="legend">
-        <span><i class="t-plain" style="background:#39433a"></i>plain 1/1</span>
-        <span><i style="background:#5c5340"></i>road 1/1</span>
-        <span><i style="background:#233a26"></i>forest 2/3</span>
-        <span><i style="background:#4a4632"></i>hill 2/3</span>
-        <span><i style="background:#4a4a52"></i>mountain 3/—</span>
-        <span><i style="background:#1e3a56"></i>water —/—</span>
-      </div>
-      <p class="hint" style="margin:10px 0 0">Cost shown as foot/horse. Cavalry cannot cross mountains, and pays 3 where infantry pays 2.</p>
-    </div>
-
-    <div class="card" id="fcCard" style="display:none">
-      <h2>Combat forecast</h2>
-      <div id="fc"></div>
+    <div class="card"><h2>Movement &amp; balance</h2>
+      <div id="moveSettings" class="tune"></div>
+      <p class="hint" style="margin:10px 0 8px">Edits apply immediately and are local to this browser. Nothing is sent anywhere.</p>
+      <button id="resetTune">Reset to defaults</button>
     </div>
   </div>
+</div>
+
+<article>
+  <h2>What this is</h2>
+  <p>A two-player turn-based tactics game on a grid, in the Fire Emblem mould. Built by Ezra, Remea and Geol, with the rules layer written here. This page is both a live test of those rules and the record of why they work the way they do.</p>
+
+  <h2>How the code is arranged</h2>
+  <p>Three parts, and the split matters more than anything else in the project:</p>
+  <table><thead><tr><th>Part</th><th>Owns</th><th>Knows about</th></tr></thead><tbody>
+    <tr><td><code>shared/</code></td><td>The rules</td><td>Nothing. No DOM, no network.</td></tr>
+    <tr><td><code>client/</code></td><td>Drawing and input</td><td>Imports the rules.</td></tr>
+    <tr><td><code>server/</code></td><td>Sockets and rooms</td><td>Imports the same rules.</td></tr>
+  </tbody></table>
+  <div class="why"><b>Why</b>The client draws the combat forecast <em>before</em> you attack; the server decides what actually happens. If those were two implementations of the same maths, they would drift, and the panel would promise 7 damage while the server dealt 6. One file, both consumers, so they cannot disagree.</div>
+  <p>It also means the rules are testable with no browser and no server. A whole battle can be simulated in milliseconds.</p>
+
+  <h3>One repository, not two</h3>
+  <p>The client deploys to Vercel and the server will run on a VPS, so splitting the repo is tempting. Don't. With one repo, adding a field to the game state is <strong>one commit</strong> that changes both halves together. With two, it is two commits that must land together, and when they drift you get a client sending something the server does not understand — which looks like a bug rather than a version mismatch.</p>
+
+  <h2>Movement</h2>
+  <h3>A budget, not a pattern</h3>
+  <p>Chess pieces move in shapes: rooks on lines, knights in an L. This game does not. Each unit has a number of movement points, each tile costs points to enter, and a unit may take <strong>any route it can afford</strong>, turning as often as it likes.</p>
+  <div class="why"><b>Why it matters</b>It is the reason terrain can be interesting. A movement pattern cannot express "the forest is slow"; a budget can.</div>
+
+  <h3>Dijkstra, not breadth-first search</h3>
+  <p>The reachable set is computed with Dijkstra's algorithm. The obvious choice is a breadth-first flood fill, and it is wrong here.</p>
+  <div class="why"><b>Why</b>BFS finds the route with the <em>fewest steps</em>. Once a forest costs 2 and a road costs 1, fewest steps is not cheapest. BFS produces overlays that look almost right, which is worse than obviously wrong.</div>
+
+  <h3>Four directions, no diagonals</h3>
+  <p>Units move up, down, left and right only.</p>
+  <div class="why"><b>Why</b>If a diagonal step costs the same as an orthogonal one, moving diagonally is strictly cheaper than two orthogonal steps. Everyone zigzags, and chokepoints stop working. Four-way also makes attack range plain Manhattan distance, which a player can count by eye. Into the Breach reached the same conclusion from the other direction: its postmortem says diagonal attacks were cut because they could not be drawn legibly on a grid.</div>
+
+  <h3>Terrain costs differ per movement type</h3>
+  <table><thead><tr><th>Terrain</th><th>Foot</th><th>Horse</th><th>Defence</th></tr></thead><tbody>
+    <tr><td>Plain / Road</td><td>1</td><td>1</td><td>0</td></tr>
+    <tr><td>Forest</td><td>2</td><td>3</td><td>+1</td></tr>
+    <tr><td>Hill</td><td>2</td><td>3</td><td>+1</td></tr>
+    <tr><td>Mountain</td><td>3</td><td>impassable</td><td>+2</td></tr>
+    <tr><td>Water</td><td colspan="2">impassable</td><td>0</td></tr>
+  </tbody></table>
+  <div class="why"><b>Why</b>This exists because of a bug we found by running the numbers. Cavalry had more health, more attack, the same defence, more speed and more movement than infantry — strictly better at everything, so infantry had no reason to exist. The genre's answer is not to nerf the stats, it is to make the map do the balancing. Cavalry owns open ground and pays for rough terrain. Infantry goes where horses cannot.</div>
+
+  <h3>Blocking rules</h3>
+  <ul>
+    <li>You may move <strong>through</strong> allies, but never stop on one.</li>
+    <li>Enemies block movement entirely.</li>
+  </ul>
+  <div class="why"><b>Why</b>The second rule is what lets two units stand shoulder to shoulder and hold a bridge. It is the most satisfying thing in the genre and it falls out of one line.</div>
+
+  <h2>Combat</h2>
+  <pre><code>damage = max(1, attacker.atk - defender.def)
+hit    = clamp(attacker.hit - defender.avo, 0, 100)
+doubles if attacker.spd - defender.spd &gt;= 4</code></pre>
+  <p>Then three steps in order: the attacker strikes, the defender counters if it is alive and the attacker is within <em>its</em> range, and whoever is four or more speed faster strikes again.</p>
+  <div class="why"><b>Why the counter rule matters</b>It is what makes range meaningful. An archer at distance 2 hitting a swordsman takes no counter at all. That single asymmetry generates most of the early tactical depth for one line of code.</div>
+
+  <h3>The dice lie, on purpose</h3>
+  <p>A displayed hit chance is not the real one. The game rolls twice and averages before comparing:</p>
+  <table><thead><tr><th>Shown</th><th>Actual</th></tr></thead><tbody>
+    <tr><td>90%</td><td>98.1%</td></tr><tr><td>70%</td><td>82.3%</td></tr>
+    <tr><td>50%</td><td>50.5%</td></tr><tr><td>30%</td><td>18.3%</td></tr>
+    <tr><td>10%</td><td>2.1%</td></tr>
+  </tbody></table>
+  <div class="why"><b>Why</b>People are poor at intuiting probability. Players read 90% as "basically certain" and feel cheated when it misses. Fire Emblem has used this two-roll average since 2002 for exactly that reason: high numbers become reliable, low numbers become long shots, and the displayed figure behaves the way players already assume it does.</div>
+
+  <h3>The unit triangle</h3>
+  <table><thead><tr><th>Attacker</th><th>Target</th><th>Damage</th><th>Rounds to kill</th><th>Takes back</th></tr></thead><tbody>
+    <tr><td>Cavalry</td><td>Infantry</td><td>4 ×2</td><td>3</td><td>5</td></tr>
+    <tr><td>Infantry</td><td>Archer</td><td>5</td><td>4</td><td>2</td></tr>
+    <tr><td>Archer</td><td>Cavalry</td><td>5</td><td>5</td><td>0</td></tr>
+    <tr><td>Archer</td><td>Infantry</td><td>2</td><td>10</td><td>5</td></tr>
+  </tbody></table>
+  <p>Cavalry beats infantry, infantry beats archer, archer beats cavalry. The last row looks broken but is the correct half of the loop: archers should not beat armour.</p>
+  <div class="why"><b>Why we know</b>None of this was designed on paper. The numbers were run, the first pass gave archers 1 damage against infantry (sixteen rounds to kill), the fix made cavalry dominant, and the triangle fell out of correcting that. Runnable rules before a user interface is the whole reason it was caught in an evening.</div>
+
+  <h2>Colour</h2>
+  <h3>Factions and overlays cannot share hues</h3>
+  <p>Nintendo's convention since 2003 is blue for movement, red for attack, green for staves. Advance Wars deliberately breaks it and uses green for movement instead.</p>
+  <div class="why"><b>Why</b>Because Advance Wars colour-codes its <em>armies</em>, so it cannot spend blue and red on overlays too. Ours are blue and red as well. Pick the faction palette first, then give the overlays what is left.</div>
+
+  <h3>The palette belongs to the viewer, not the game</h3>
+  <p>Palette is a browser preference. It is never sent over the wire, so two players can view the same match differently. More importantly, the slots are semantic — <code>friendly</code> and <code>hostile</code> — and each client fills them based on which side it is on.</p>
+  <div class="why"><b>Why</b>In Fire Emblem you are always blue and the enemy always red. Pin blue to player 1 and player 2 spends the entire game with every instinct inverted.</div>
+
+  <h3>Colour is never the only channel</h3>
+  <p>Every overlay carries a pattern as well as a hue: solid, hatched, cross-hatched, dotted. Toggle "Patterns" off above to see how much is lost.</p>
+  <div class="why"><b>Why</b>Roughly 8% of men have a colour vision deficiency. Fire Emblem players have been asking for a colourblind mode since the GameBoy Advance era and no entry has ever shipped one. Two extra palettes and a pattern channel cost an afternoon.</div>
+
+  <h2>Threat, and the question nobody answers</h2>
+  <p>Two overlays, deliberately different:</p>
+  <ul>
+    <li><strong>Attack range</strong> — what the selected unit could hit, from anywhere it can reach.</li>
+    <li><strong>Threat</strong> — every tile the enemy could reach and attack.</li>
+  </ul>
+  <p>Then a third mode that almost no game has. <strong>"If I moved away"</strong> recomputes the threat with your own units erased from the board.</p>
+  <blockquote>"When I move a unit out of an enemy's way their danger zone grows larger and can suddenly attack a previously safe unit. Is there a way to make the game assume all my units are already out of the way?"</blockquote>
+  <div class="why"><b>Why</b>That is the single most common complaint about danger overlays, and no Fire Emblem answers it. Battle for Wesnoth is the only game found that does, on <code>Ctrl+B</code>. The standard overlay tells you where you are safe; this one tells you where you are safe <em>after you move</em>, which is the decision you are actually making. It costs one line, because the threat function already takes the unit list:
+  <pre style="margin-top:10px"><code>threatRange(0, grid, units.filter(u =&gt; u.owner !== 0))</code></pre></div>
+  <p>The overlay also deliberately <strong>over-reports</strong>: tiles occupied by an enemy's own allies still count as places they could attack from. Fire Emblem 8 excludes them and lt-maker does not.</p>
+  <div class="why"><b>Why</b>Under-reporting a threat is the failure that loses players. Over-reporting merely makes them cautious.</div>
+
+  <h2>Turns</h2>
+  <p>Phase-based: move all of your units, then hand over. Each unit tracks <code>hasMoved</code> and <code>hasActed</code> separately — a unit may move then act, or move then wait, but never act then move.</p>
+  <div class="why"><b>Why phases</b>You can bait with one unit and follow up with another in the same phase. Unit-by-unit alternation destroys that, and combined manoeuvre is the point of the genre.</div>
+  <p>A move is <strong>provisional until a command is chosen</strong>. Cancel before that and the unit returns to where it started. Choosing any command, including Wait, is the commit. Advance Wars: Days of Ruin puts it best — <em>"until orders have been finalized, you can back out of menus."</em></p>
+  <div class="why"><b>Why</b>The weight of a tactics game should sit on outcomes, not on input mistakes. A misclick should cost nothing; a dead unit should cost everything.</div>
+
+  <h2>Not built yet</h2>
+  <ul class="todo">
+    <li><code>applyAction(state, action)</code> — the reducer the server calls when a message arrives</li>
+    <li>The WebSocket server, rooms, and reconnect</li>
+    <li>Win conditions</li>
+    <li>Animation: the rules already emit an event list (<code>attack</code>, <code>counter</code>, <code>death</code> with hit, crit and damage) because full-state sync alone cannot tell the client <em>what just happened</em></li>
+  </ul>
+</article>
+
+<footer>Rules in <code>shared/</code> · this page in <code>viz/</code> · auto-deployed from GitHub to theo every 60 seconds</footer>
 </div>
 
 <script type="module">
@@ -113,107 +279,151 @@ import { makeDemoGame } from "../shared/fixtures.js";
 import { UNIT_TYPES, TERRAIN } from "../shared/units.js";
 import { canStopAt, attackable, threatRange, pathTo, reachable, key } from "../shared/movement.js";
 import { forecast } from "../shared/combat.js";
+import { PALETTES, DEFAULT_PALETTE, loadView, saveView, resolve, withAlpha, patternCss } from "../shared/palettes.js";
 
 const game = makeDemoGame();
-const boardEl = document.getElementById("board");
-const selEl = document.getElementById("sel");
-const fcCard = document.getElementById("fcCard");
-const fcEl = document.getElementById("fc");
+let view = loadView();
+let pal = resolve(view);
 
-let selected = null;
-let reach = null, stops = null, atk = null;
-let showThreat = false, showAtk = true;
-let hoverPath = [];
+const $ = (id) => document.getElementById(id);
+const boardEl = $("board"), selEl = $("sel"), fcCard = $("fcCard"), fcEl = $("fc");
 
-const unitAt = (x, y) => game.units.find(u => u.x === x && u.y === y && u.hp > 0);
-const LETTER = { infantry: "I", cavalry: "C", archer: "A" };
+let selected = null, reach = null, stops = null, atk = null, hoverPath = [];
+let showAtk = true, showThreat = false, ghost = false;
+
+const unitAt = (x,y) => game.units.find(u => u.x===x && u.y===y && u.hp>0);
+const LETTER = { infantry:"I", cavalry:"C", archer:"A" };
+
+// palette picker
+const palSel = $("pal");
+for (const [k,p] of Object.entries(PALETTES)) {
+  const o = document.createElement("option");
+  o.value = k; o.textContent = p.label; palSel.appendChild(o);
+}
+palSel.value = view.palette;
+$("side").value = String(view.side);
+$("tPat").setAttribute("aria-pressed", String(view.patterns));
+
+palSel.onchange = () => { view.palette = palSel.value; commit(); };
+$("side").onchange = () => { view.side = +$("side").value; commit(); };
+$("tPat").onclick = (e) => { view.patterns = !view.patterns;
+  e.target.setAttribute("aria-pressed", String(view.patterns)); commit(); };
+$("tAtk").onclick = (e) => { showAtk = !showAtk;
+  e.target.setAttribute("aria-pressed", String(showAtk)); render(); };
+$("tThreat").onclick = (e) => { showThreat = !showThreat;
+  e.target.setAttribute("aria-pressed", String(showThreat)); render(); };
+$("tGhost").onclick = (e) => { ghost = !ghost;
+  if (ghost) { showThreat = true; $("tThreat").setAttribute("aria-pressed","true"); }
+  e.target.setAttribute("aria-pressed", String(ghost)); render(); };
+
+function commit(){ saveView(view); pal = resolve(view); paintLegend(); render(); }
 
 const cells = [];
-for (let y = 0; y < game.grid.h; y++) {
-  for (let x = 0; x < game.grid.w; x++) {
-    const d = document.createElement("div");
-    d.className = `cell t-${game.grid.terrain[y][x]}`;
-    d.dataset.x = x; d.dataset.y = y;
-    d.addEventListener("click", () => onClick(x, y));
-    d.addEventListener("mouseenter", () => onHover(x, y));
-    boardEl.appendChild(d);
-    cells.push(d);
-  }
+for (let y=0; y<game.grid.h; y++) for (let x=0; x<game.grid.w; x++) {
+  const d = document.createElement("div");
+  d.className = `cell t-${game.grid.terrain[y][x]}`;
+  d.dataset.x = x; d.dataset.y = y;
+  d.addEventListener("click", () => onClick(x,y));
+  d.addEventListener("mouseenter", () => onHover(x,y));
+  boardEl.appendChild(d); cells.push(d);
 }
 
-function select(u) {
+function select(u){
   selected = u;
-  if (!u) { reach = stops = atk = null; hoverPath = []; fcCard.style.display = "none"; return; }
+  if (!u) { reach = stops = atk = null; hoverPath = []; fcCard.style.display="none"; return; }
   reach = reachable(u, game.grid, game.units);
   stops = canStopAt(u, game.grid, game.units, reach);
-  atk = attackable(u, game.grid, game.units, stops);
-  hoverPath = [];
-  fcCard.style.display = "none";
+  atk   = attackable(u, game.grid, game.units, stops);
+  hoverPath = []; fcCard.style.display = "none";
 }
 
-function onClick(x, y) {
-  const u = unitAt(x, y);
-  if (u) { select(selected && selected.id === u.id ? null : u); }
-  else if (selected && stops.has(key(x, y))) {
-    // move it, purely so the visualiser is explorable
-    selected.x = x; selected.y = y;
-    select(selected);
-  } else select(null);
+function onClick(x,y){
+  const u = unitAt(x,y);
+  if (u) select(selected && selected.id===u.id ? null : u);
+  else if (selected && stops.has(key(x,y))) { selected.x=x; selected.y=y; select(selected); }
+  else select(null);
   render();
 }
 
-function onHover(x, y) {
+function onHover(x,y){
   if (!selected) return;
-  const target = unitAt(x, y);
-  if (target && target.owner !== selected.owner && atk?.has(key(x, y))) {
-    const f = forecast(selected, target, {
+  const t = unitAt(x,y);
+  if (t && t.owner !== selected.owner && atk?.has(key(x,y))) {
+    const f = forecast(selected, t, {
       attackerTile: game.grid.terrain[selected.y][selected.x],
-      defenderTile: game.grid.terrain[y][x],
-    });
+      defenderTile: game.grid.terrain[y][x] });
     fcCard.style.display = "";
-    fcEl.innerHTML = `
-      <dl class="kv">
-        <dt>Target</dt><dd>${UNIT_TYPES[target.type].label} · ${target.hp} hp</dd>
-        <dt>Damage</dt><dd>${f.damage}${f.doubles ? " ×2" : ""}</dd>
-        <dt>Hit</dt><dd>${f.hit}%</dd>
-        <dt>Counter</dt><dd>${f.canCounter ? `${f.counterDamage} at ${f.counterHit}%` : "none"}</dd>
-        <dt>Distance</dt><dd>${f.distance}</dd>
-      </dl>`;
+    fcEl.innerHTML = `<dl class="kv">
+      <dt>Target</dt><dd>${UNIT_TYPES[t.type].label} · ${t.hp} hp</dd>
+      <dt>Damage</dt><dd>${f.damage}${f.doubles?" ×2":""}</dd>
+      <dt>Hit</dt><dd>${f.hit}%</dd>
+      <dt>Counter</dt><dd>${f.canCounter?`${f.counterDamage} at ${f.counterHit}%`:"none"}</dd></dl>`;
   } else fcCard.style.display = "none";
-
-  hoverPath = stops?.has(key(x, y)) ? (pathTo(reach, x, y) ?? []) : [];
+  hoverPath = stops?.has(key(x,y)) ? (pathTo(reach,x,y) ?? []) : [];
   render();
 }
 
-document.getElementById("tThreat").onclick = (e) => {
-  showThreat = !showThreat;
-  e.target.setAttribute("aria-pressed", String(showThreat));
-  render();
-};
-document.getElementById("tAtk").onclick = (e) => {
-  showAtk = !showAtk;
-  e.target.setAttribute("aria-pressed", String(showAtk));
-  render();
-};
+function overlay(slot, alpha){
+  const s = pal[slot];
+  const el = document.createElement("div");
+  el.className = `ov ${slot}`;
+  el.style.background = withAlpha(s.fill, alpha);
+  if (view.patterns) el.style.backgroundImage = patternCss(s.pattern, "#000", .35);
+  return el;
+}
 
-function render() {
-  const threat = showThreat ? threatRange(0, game.grid, game.units) : null;
-  const pathSet = new Set(hoverPath.map(p => key(p.x, p.y)));
+function paintLegend(){
+  const rows = [
+    ["move","Can move (safe)"], ["moveThreatened","Can move, threatened"],
+    ["attack","Could attack"], ["threat","Enemy threatens"], ["support","Support range"],
+  ];
+  $("legend").innerHTML = rows.map(([k,label]) => {
+    const s = pal[k];
+    const pat = view.patterns ? `background-image:${patternCss(s.pattern,"#000",.4)};` : "";
+    return `<div><span class="sw" style="background:${withAlpha(s.fill,.75)};${pat}"></span>${label}</div>`;
+  }).join("") +
+  `<div><span class="sw" style="background:${pal.friendly}"></span>Your units</div>
+   <div><span class="sw" style="background:${pal.hostile}"></span>Their units</div>`;
+  $("palNote").textContent = pal.note;
+
+  $("terrainLegend").innerHTML = Object.entries(TERRAIN).map(([k,t]) => {
+    const c = { plain:"#39433a", road:"#5c5340", forest:"#22392a",
+                hill:"#4a4632", mountain:"#484850", water:"#1d3752" }[k];
+    const f = t.cost.foot ?? "—", h = t.cost.horse ?? "—";
+    return `<div><span class="sw" style="background:${c}"></span>${t.label} ${f}/${h}${t.def?` · +${t.def} def`:""}</div>`;
+  }).join("");
+}
+
+function render(){
+  const enemiesOnly = game.units.filter(u => u.owner !== view.side);
+  const threat = showThreat
+    ? threatRange(view.side, game.grid, ghost ? enemiesOnly : game.units)
+    : null;
+  const pathSet = new Set(hoverPath.map(p => key(p.x,p.y)));
 
   for (const d of cells) {
-    const x = +d.dataset.x, y = +d.dataset.y, k = key(x, y);
+    const x=+d.dataset.x, y=+d.dataset.y, k=key(x,y);
     d.className = `cell t-${game.grid.terrain[y][x]}`;
-    if (threat?.has(k)) d.classList.add("threat");
-    if (stops?.has(k)) d.classList.add("reach");
-    if (showAtk && atk?.has(k)) d.classList.add("atk");
-    if (pathSet.has(k)) d.classList.add("path");
-
-    const u = unitAt(x, y);
     d.innerHTML = "";
+
+    const reachable_ = stops?.has(k);
+    const threatened = threat?.has(k);
+    if (reachable_) d.appendChild(overlay(threatened ? "moveThreatened" : "move", .5));
+    else if (threatened) d.appendChild(overlay("threat", .3));
+    if (showAtk && atk?.has(k) && !reachable_) d.appendChild(overlay("attack", .3));
+    if (pathSet.has(k)) {
+      const p = document.createElement("div");
+      p.className = "ov path";
+      p.style.background = withAlpha(pal.path, .55);
+      d.appendChild(p);
+    }
+
+    const u = unitAt(x,y);
     if (u) {
       if (selected?.id === u.id) d.classList.add("sel");
       const s = document.createElement("div");
-      s.className = `unit u${u.owner}${u.hasActed ? " done" : ""}`;
+      s.className = `unit${u.hasActed?" done":""}`;
+      s.style.background = pal.ownerColour(u.owner);
       s.textContent = LETTER[u.type];
       d.appendChild(s);
     }
@@ -221,22 +431,79 @@ function render() {
 
   if (selected) {
     const t = UNIT_TYPES[selected.type];
-    selEl.innerHTML = `
-      <dl class="kv">
-        <dt>Unit</dt><dd>${t.label} (${selected.id})</dd>
-        <dt>Player</dt><dd>${selected.owner}</dd>
-        <dt>At</dt><dd>${selected.x}, ${selected.y} · ${TERRAIN[game.grid.terrain[selected.y][selected.x]].label}</dd>
-        <dt>Move</dt><dd>${t.move} (${t.moveType})</dd>
-        <dt>Reaches</dt><dd>${stops.size} tiles</dd>
-        <dt>Threatens</dt><dd>${atk.size} tiles</dd>
-        <dt>Range</dt><dd>${t.range}</dd>
-      </dl>
-      <p class="hint" style="margin:10px 0 0">Click an empty blue tile to move. Hover an enemy inside the red outline for the forecast.</p>`;
-  } else {
-    selEl.innerHTML = `<span class="hint">Click a unit.</span>`;
+    const mine = selected.owner === view.side;
+    selEl.innerHTML = `<dl class="kv">
+      <dt>Unit</dt><dd>${t.label} (${selected.id})</dd>
+      <dt>Side</dt><dd>${mine ? "yours" : "theirs"}</dd>
+      <dt>At</dt><dd>${selected.x}, ${selected.y} · ${TERRAIN[game.grid.terrain[selected.y][selected.x]].label}</dd>
+      <dt>Move</dt><dd>${t.move} (${t.moveType})</dd>
+      <dt>Reaches</dt><dd>${stops.size} tiles</dd>
+      <dt>Threatens</dt><dd>${atk.size} tiles</dd>
+      <dt>Range</dt><dd>${t.range}</dd></dl>
+      <p class="hint" style="margin:9px 0 0">Click a highlighted tile to move. Hover an enemy in range for the forecast.</p>`;
+  } else selEl.innerHTML = `<span class="hint">Click a unit.</span>`;
+}
+
+// ---- movement / balance tuning -------------------------------------------
+// The viz mutates the shared tables directly so what you see is genuinely what
+// the rules produce. A blank terrain cost means impassable for that type.
+const DEFAULTS = JSON.parse(JSON.stringify({ UNIT_TYPES, TERRAIN }));
+
+function num(value, onChange, cls = "") {
+  const i = document.createElement("input");
+  i.type = "text"; i.inputMode = "numeric";
+  i.value = value ?? ""; i.className = cls;
+  i.addEventListener("change", () => {
+    const raw = i.value.trim();
+    onChange(raw === "" || raw === "-" ? null : Math.max(0, parseInt(raw, 10) || 0));
+    buildTune(); if (selected) select(selected); render();
+  });
+  return i;
+}
+
+function buildTune() {
+  const box = $("moveSettings");
+  box.innerHTML = "";
+
+  const h1 = document.createElement("div");
+  h1.className = "grp"; h1.textContent = "Move budget";
+  box.appendChild(h1);
+  for (const [k, t] of Object.entries(UNIT_TYPES)) {
+    const l = document.createElement("label");
+    l.append(`${t.label} (${t.moveType})`);
+    l.appendChild(num(t.move, (v) => (t.move = v ?? 1)));
+    const r = document.createElement("span");
+    r.className = "hint"; r.textContent = `rng ${t.range}`;
+    l.appendChild(r);
+    box.appendChild(l);
+  }
+
+  const h2 = document.createElement("div");
+  h2.className = "grp"; h2.textContent = "Terrain cost — foot / horse";
+  box.appendChild(h2);
+  for (const [k, t] of Object.entries(TERRAIN)) {
+    const l = document.createElement("label");
+    l.append(t.label);
+    l.appendChild(num(t.cost.foot, (v) => (t.cost.foot = v),
+      t.cost.foot == null ? "imp" : ""));
+    l.appendChild(num(t.cost.horse, (v) => (t.cost.horse = v),
+      t.cost.horse == null ? "imp" : ""));
+    box.appendChild(l);
   }
 }
 
+$("resetTune").onclick = () => {
+  for (const [k, v] of Object.entries(DEFAULTS.UNIT_TYPES)) Object.assign(UNIT_TYPES[k], v);
+  for (const [k, v] of Object.entries(DEFAULTS.TERRAIN)) {
+    TERRAIN[k].def = v.def;
+    TERRAIN[k].cost.foot = v.cost.foot;
+    TERRAIN[k].cost.horse = v.cost.horse;
+  }
+  buildTune(); paintLegend(); if (selected) select(selected); render();
+};
+
+buildTune();
+paintLegend();
 render();
 </script>
 </body>
