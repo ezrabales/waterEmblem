@@ -182,7 +182,7 @@ async function show(file) {
   for (const a of navEl.children) a.toggleAttribute("aria-current", a.dataset.f === file);
   docEl.innerHTML = `<p class="loading">Loading ${file}…</p>`;
   try {
-    const r = await fetch(`./${file}`, { cache: "no-cache" });
+    const r = await fetch(`./research/${file}`, { cache: "no-cache" });
     if (!r.ok) throw new Error(`${r.status}`);
     docEl.innerHTML = render(await r.text());
   } catch (e) {
