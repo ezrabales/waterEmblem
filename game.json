@@ -1,0 +1,5 @@
+{
+  "name": "Water Emblem",
+  "description": "Turn-based grid tactics. Rules visualiser: movement flood fill, terrain costs per movement type, attack range, threat overlay and combat forecast, all computed live by the real shared modules.",
+  "entry": "viz/"
+}
