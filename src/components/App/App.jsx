@@ -2,6 +2,7 @@ import "./App.css";
 import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { GlobalProvider } from "../GlobalState/GlobalState";
+import Main from "../Main/Main";
 
 const App = () => {
   const { pathname } = useLocation();
