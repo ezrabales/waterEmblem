@@ -15,6 +15,11 @@
 //    so the board stays readable for the ~8% of male players with a colour
 //    vision deficiency. No Fire Emblem has ever shipped a colourblind mode
 //    despite twenty years of requests; this is cheap and we should just do it.
+// 3. Every pair of overlays that can appear together is separated by LUMINANCE
+//    as well as hue, at least 1.8:1. Hue alone is not enough: the obvious
+//    colourblind-safe pairings are often near-isoluminant, so with colour
+//    removed the layers collapse into each other. The first version of this
+//    file failed at 1.03:1. `node scripts/check-palettes.mjs` enforces it.
 
 export const PATTERNS = {
   solid: "none",
@@ -31,57 +36,57 @@ export const PALETTES = {
   standard: {
     label: "Standard",
     note: "Factions own blue and red, so overlays live elsewhere on the wheel.",
-    friendly: "#4f9dd9",
-    hostile: "#e0574a",
-    neutral: "#7bc47f",
+    friendly: "#68a5db",
+    hostile: "#a3311f",
+    neutral: "#668c54",
     // Triangle Strategy's idea: colour the decision, not the data.
-    move: { fill: "#2fb3a8", pattern: "solid" }, // reachable and safe
-    moveThreatened: { fill: "#9b6fd4", pattern: "hatch" }, // reachable but exposed
-    attack: { fill: "#e8a33d", pattern: "cross" }, // what you could hit
-    threat: { fill: "#d1477f", pattern: "hatch" }, // what they could hit
-    support: { fill: "#7bc47f", pattern: "dots" }, // staff / heal range
+    move: { fill: "#1b756d", pattern: "solid" }, // reachable and safe
+    moveThreatened: { fill: "#b68cdb", pattern: "hatch" }, // reachable but exposed
+    attack: { fill: "#f4c473", pattern: "cross" }, // what you could hit
+    threat: { fill: "#751b48", pattern: "hatch" }, // what they could hit
+    support: { fill: "#d1efd6", pattern: "dots" }, // staff / heal range
     path: "#ffffff",
   },
 
   deuteranopia: {
     label: "Colourblind — red/green",
     note: "Blue and orange are the safest pair for deuteranopia and protanopia. No red/green anywhere.",
-    friendly: "#3d8bd4",
-    hostile: "#e08214",
-    neutral: "#c7c7c7",
-    move: { fill: "#56b4e9", pattern: "solid" },
-    moveThreatened: { fill: "#9a72c4", pattern: "hatch" },
-    attack: { fill: "#f0e442", pattern: "cross" },
-    threat: { fill: "#d55e00", pattern: "hatch" },
-    support: { fill: "#cccccc", pattern: "dots" },
+    friendly: "#5ba7dc",
+    hostile: "#864a07",
+    neutral: "#828282",
+    move: { fill: "#196f9d", pattern: "solid" },
+    moveThreatened: { fill: "#bb8cd3", pattern: "hatch" },
+    attack: { fill: "#e8cb0a", pattern: "cross" },
+    threat: { fill: "#663008", pattern: "hatch" },
+    support: { fill: "#e8e8e8", pattern: "dots" },
     path: "#ffffff",
   },
 
   tritanopia: {
     label: "Colourblind — blue/yellow",
     note: "Tritanopia confuses blue with green and yellow with violet, so this leans on red and teal instead.",
-    friendly: "#d94f6e",
-    hostile: "#2aa198",
-    neutral: "#b9b9b9",
-    move: { fill: "#e07a9a", pattern: "solid" },
-    moveThreatened: { fill: "#8a3050", pattern: "hatch" },
-    attack: { fill: "#c94f2f", pattern: "cross" },
-    threat: { fill: "#7d1128", pattern: "hatch" },
-    support: { fill: "#bfbfbf", pattern: "dots" },
+    friendly: "#e0859c",
+    hostile: "#15635e",
+    neutral: "#828282",
+    move: { fill: "#bc3658", pattern: "solid" },
+    moveThreatened: { fill: "#c98e98", pattern: "hatch" },
+    attack: { fill: "#f6c0aa", pattern: "cross" },
+    threat: { fill: "#0d4744", pattern: "hatch" },
+    support: { fill: "#e8e8e8", pattern: "dots" },
     path: "#ffffff",
   },
 
   contrast: {
     label: "High contrast",
     note: "Maximum separation and heavy patterning. Useful on a bad screen or in sunlight.",
-    friendly: "#ffffff",
-    hostile: "#ff2d2d",
-    neutral: "#ffd400",
-    move: { fill: "#00e5ff", pattern: "solid" },
-    moveThreatened: { fill: "#b14cff", pattern: "cross" },
-    attack: { fill: "#ffd400", pattern: "cross" },
-    threat: { fill: "#ff2d2d", pattern: "grid" },
-    support: { fill: "#00ff85", pattern: "dots" },
+    friendly: "#a0a0a0",
+    hostile: "#b60000",
+    neutral: "#9d7d00",
+    move: { fill: "#007289", pattern: "solid" },
+    moveThreatened: { fill: "#d974fb", pattern: "cross" },
+    attack: { fill: "#eaca00", pattern: "cross" },
+    threat: { fill: "#860000", pattern: "grid" },
+    support: { fill: "#86ffb8", pattern: "dots" },
     path: "#ffffff",
   },
 
