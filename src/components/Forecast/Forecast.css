@@ -1,0 +1,238 @@
+.forecast {
+  --forecast-panel: #1e2228;
+  --forecast-panel-2: #252a32;
+  --forecast-edge: #3a424e;
+  --forecast-gold: #c9a227;
+  --forecast-ink: #e8e6e1;
+  --forecast-dim: #8d95a1;
+  --forecast-blue: #5b8dd9;
+  --forecast-blue-dim: #2f4d7a;
+  --forecast-red: #d95b5b;
+  --forecast-red-dim: #7a2f2f;
+
+  width: 340px;
+  color: var(--forecast-ink);
+  font:
+    15px/1.5 ui-sans-serif,
+    system-ui,
+    sans-serif;
+  background: linear-gradient(
+    180deg,
+    var(--forecast-panel-2),
+    var(--forecast-panel)
+  );
+  border: 1px solid var(--forecast-edge);
+  border-radius: 6px;
+  box-shadow:
+    0 12px 32px rgb(0 0 0 / 50%),
+    inset 0 1px 0 rgb(255 255 255 / 4%);
+  overflow: hidden;
+}
+
+.forecast-rule {
+  height: 1px;
+  opacity: 0.5;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--forecast-gold),
+    transparent
+  );
+}
+
+.forecast-heads {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+}
+
+.forecast-side {
+  padding: 14px 16px 12px;
+}
+
+.forecast-them {
+  text-align: right;
+}
+
+.forecast-name {
+  font:
+    600 17px/1.2 ui-serif,
+    Georgia,
+    serif;
+}
+
+.forecast-you .forecast-name {
+  color: var(--forecast-blue);
+}
+
+.forecast-them .forecast-name {
+  color: var(--forecast-red);
+}
+
+.forecast-class {
+  margin-top: 2px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--forecast-dim);
+}
+
+.forecast-nums {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  margin-top: 10px;
+  font:
+    600 13px/1 ui-monospace,
+    Menlo,
+    monospace;
+}
+
+.forecast-them .forecast-nums {
+  justify-content: flex-end;
+}
+
+.forecast-now {
+  font-size: 15px;
+}
+
+.forecast-max {
+  font-size: 12px;
+  color: var(--forecast-dim);
+}
+
+.forecast-bar {
+  position: relative;
+  height: 6px;
+  margin-top: 5px;
+  overflow: hidden;
+  background: #0f1216;
+  border: 1px solid #0a0c0f;
+  border-radius: 3px;
+}
+
+.forecast-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 2px 0 0 2px;
+}
+
+.forecast-you .forecast-bar i {
+  background: linear-gradient(
+    90deg,
+    var(--forecast-blue-dim),
+    var(--forecast-blue)
+  );
+}
+
+.forecast-them .forecast-bar i {
+  background: linear-gradient(
+    90deg,
+    var(--forecast-red-dim),
+    var(--forecast-red)
+  );
+}
+
+/* hatched section = damage this exchange is predicted to take off */
+.forecast-bar u {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  text-decoration: none;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgb(255 255 255 / 22%) 0 3px,
+    transparent 3px 6px
+  );
+}
+
+.forecast-vs {
+  align-self: center;
+  padding: 0 4px;
+  font:
+    600 11px/1 ui-sans-serif,
+    sans-serif;
+  letter-spacing: 0.16em;
+  color: var(--forecast-dim);
+}
+
+.forecast-stats {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.forecast-cell {
+  padding: 7px 16px;
+  font:
+    600 15px/1 ui-monospace,
+    Menlo,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.forecast-cell.forecast-them {
+  text-align: right;
+}
+
+.forecast-none {
+  font-weight: 400;
+  color: var(--forecast-dim);
+}
+
+.forecast-key {
+  padding: 7px 6px;
+  text-align: center;
+  white-space: nowrap;
+  font:
+    600 10px/1 ui-sans-serif,
+    sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--forecast-dim);
+}
+
+.forecast-stripe {
+  background: rgb(255 255 255 / 1.8%);
+}
+
+.forecast-good {
+  color: #6fbf73;
+}
+
+.forecast-mid {
+  color: #e0a53f;
+}
+
+.forecast-bad {
+  color: #d95b5b;
+}
+
+.forecast-dbl {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  vertical-align: 1px;
+  color: var(--forecast-gold);
+  border: 1px solid var(--forecast-gold);
+  border-radius: 3px;
+  font:
+    600 10px/1.4 ui-sans-serif,
+    sans-serif;
+  letter-spacing: 0.08em;
+}
+
+.forecast-them .forecast-dbl {
+  margin: 0 6px 0 0;
+}
+
+.forecast-verdict {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px 12px;
+  font-size: 12.5px;
+  color: var(--forecast-dim);
+}
+
+.forecast-verdict b {
+  font-weight: 600;
+}
