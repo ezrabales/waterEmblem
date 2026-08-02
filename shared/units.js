@@ -14,6 +14,7 @@ export const UNIT_TYPES = {
     crit: 2,
     move: 4,
     range: 1,
+    moveType: "foot",
   },
   cavalry: {
     label: "Cavalry",
@@ -26,6 +27,7 @@ export const UNIT_TYPES = {
     crit: 4,
     move: 7,
     range: 1,
+    moveType: "horse",
   },
   archer: {
     label: "Archer",
@@ -38,18 +40,23 @@ export const UNIT_TYPES = {
     crit: 3,
     move: 4,
     range: 2,
+    moveType: "foot",
   },
 };
 
-// Terrain: cost is movement points to enter, def is a defence bonus while
-// standing there. `null` cost means impassable.
+// Terrain. `def` is a defence bonus while standing there. `cost` is movement
+// points to enter, PER MOVEMENT TYPE. null means impassable for that type.
+//
+// This is the lever that balances fast units: cavalry owns open ground and
+// pays for rough terrain, infantry goes where horses cannot. The map does the
+// balancing rather than the stat block.
 export const TERRAIN = {
-  plain: { label: "Plain", cost: 1, def: 0 },
-  road: { label: "Road", cost: 1, def: 0 },
-  forest: { label: "Forest", cost: 2, def: 1 },
-  hill: { label: "Hill", cost: 2, def: 1 },
-  mountain: { label: "Mountain", cost: 3, def: 2 },
-  water: { label: "Water", cost: null, def: 0 },
+  plain: { label: "Plain", def: 0, cost: { foot: 1, horse: 1 } },
+  road: { label: "Road", def: 0, cost: { foot: 1, horse: 1 } },
+  forest: { label: "Forest", def: 1, cost: { foot: 2, horse: 3 } },
+  hill: { label: "Hill", def: 1, cost: { foot: 2, horse: 3 } },
+  mountain: { label: "Mountain", def: 2, cost: { foot: 3, horse: null } },
+  water: { label: "Water", def: 0, cost: { foot: null, horse: null } },
 };
 
 // Build a fresh unit instance from a template.
