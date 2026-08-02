@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Water Emblem — research</title>
+<style>
+  :root{
+    --bg:#101318; --panel:#191d24; --panel-2:#20242c; --edge:#2f3742;
+    --ink:#e7e5e0; --dim:#8a929f; --dimmer:#5c6470; --gold:#c9a227; --teal:#4ecdc4;
+    --measure:68ch;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15.5px/1.7 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+
+  nav.top{position:sticky;top:0;z-index:10;display:flex;gap:20px;align-items:center;
+    padding:12px 24px;background:rgba(16,19,24,.94);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--edge)}
+  nav.top a{color:var(--dim);text-decoration:none;font:500 13.5px/1 ui-sans-serif,sans-serif}
+  nav.top a:hover,nav.top a[aria-current]{color:var(--gold)}
+  nav.top .brand{font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--dimmer);margin-right:6px}
+
+  .shell{display:flex;gap:40px;max-width:1180px;margin:0 auto;padding:34px 24px 96px;
+    align-items:flex-start}
+  aside{position:sticky;top:66px;width:216px;flex:none}
+  aside h2{font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--dimmer);margin:0 0 11px}
+  aside a{display:block;padding:7px 10px;margin-bottom:3px;border-radius:4px;
+    color:var(--dim);text-decoration:none;font-size:13.5px;border-left:2px solid transparent}
+  aside a:hover{background:var(--panel);color:var(--ink)}
+  aside a[aria-current]{color:var(--gold);border-left-color:var(--gold);background:var(--panel)}
+  aside .toc{margin-top:20px}
+  aside .toc a{font-size:12.5px;padding:4px 10px;color:var(--dimmer)}
+  aside .toc a:hover{color:var(--ink);background:none}
+
+  main{flex:1;min-width:0}
+  main h1{margin:0 0 6px;font:600 30px/1.15 ui-serif,Georgia,serif;text-wrap:balance}
+  main h2{margin:40px 0 12px;font:600 21px/1.25 ui-serif,Georgia,serif;
+    text-wrap:balance;scroll-margin-top:74px}
+  main h3{margin:26px 0 8px;font:600 15px/1.35 ui-sans-serif,sans-serif;scroll-margin-top:74px}
+  main p,main li{max-width:var(--measure);color:#cfcdc8}
+  main p{margin:0 0 14px}
+  main ul,main ol{margin:0 0 16px;padding-left:22px}
+  main li{margin-bottom:6px}
+  main strong{color:var(--ink);font-weight:600}
+  main em{color:#dcd9d3}
+  main a{color:var(--teal)}
+  code{font:13px/1.5 ui-monospace,Menlo,monospace;background:#20242c;padding:2px 5px;
+    border-radius:3px;color:#d9d6cf}
+  pre{max-width:var(--measure);overflow-x:auto;background:#171b21;border:1px solid var(--edge);
+    border-radius:5px;padding:12px 14px;margin:0 0 16px}
+  pre code{background:none;padding:0}
+  blockquote{margin:0 0 16px;padding:3px 0 3px 16px;border-left:2px solid var(--gold);
+    max-width:var(--measure);color:var(--dim);font-style:italic}
+  blockquote p:last-child{margin-bottom:0}
+  hr{border:0;border-top:1px solid var(--edge);margin:30px 0}
+  table{border-collapse:collapse;margin:0 0 18px;font-size:13.5px;
+    font-variant-numeric:tabular-nums;display:block;overflow-x:auto;max-width:100%}
+  th,td{border:1px solid var(--edge);padding:6px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel);font-weight:600;color:var(--dim);font-size:11.5px;
+    letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
+  .loading{color:var(--dimmer)}
+  @media (max-width:860px){ .shell{flex-direction:column;gap:24px} aside{position:static;width:100%} }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <span class="brand">Water Emblem</span>
+  <a href="../viz/">Visualiser</a>
+  <a href="./" aria-current="page">Research</a>
+  <a href="https://github.com/ezrabales/waterEmblem">Repo</a>
+</nav>
+
+<div class="shell">
+  <aside>
+    <h2>Notes</h2>
+    <div id="nav"></div>
+    <div class="toc"><h2 style="margin-top:22px">On this page</h2><div id="toc"></div></div>
+  </aside>
+  <main id="doc"><p class="loading">Loading…</p></main>
+</div>
+
+<script type="module">
+const DOCS = [
+  ["README.md", "Overview"],
+  ["overlays-and-threat.md", "Overlays & threat"],
+  ["undo-and-commit.md", "Undo & commit"],
+  ["movement-and-combat.md", "Movement & combat"],
+];
+
+// --- a small markdown renderer, enough for these documents ----------------
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const slug = (s) => s.toLowerCase().replace(/[^\w]+/g, "-").replace(/^-|-$/g, "");
+
+const inline = (s) =>
+  esc(s)
+    .replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`)
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+
+const row = (line, tag) =>
+  "<tr>" + line.replace(/^\||\|$/g, "").split("|")
+    .map((c) => `<${tag}>${inline(c.trim())}</${tag}>`).join("") + "</tr>";
+
+function render(md) {
+  const out = [];
+  const lines = md.split("\n");
+  let i = 0, list = null;
+
+  const closeList = () => { if (list) { out.push(`</${list}>`); list = null; } };
+
+  while (i < lines.length) {
+    const l = lines[i];
+
+    if (/^```/.test(l)) {                                   // fenced code
+      closeList();
+      const buf = [];
+      i++;
+      while (i < lines.length && !/^```/.test(lines[i])) buf.push(lines[i++]);
+      i++;
+      out.push(`<pre><code>${esc(buf.join("\n"))}</code></pre>`);
+      continue;
+    }
+    if (/^\|/.test(l) && /^\|[\s:|-]+\|?$/.test(lines[i + 1] ?? "")) {  // table
+      closeList();
+      out.push("<table><thead>" + row(l, "th") + "</thead><tbody>");
+      i += 2;
+      while (i < lines.length && /^\|/.test(lines[i])) out.push(row(lines[i++], "td"));
+      out.push("</tbody></table>");
+      continue;
+    }
+    const h = l.match(/^(#{1,4})\s+(.*)$/);
+    if (h) {
+      closeList();
+      const n = h[1].length, txt = h[2];
+      out.push(`<h${n} id="${slug(txt)}">${inline(txt)}</h${n}>`);
+      i++; continue;
+    }
+    if (/^>\s?/.test(l)) {                                   // blockquote
+      closeList();
+      const buf = [];
+      while (i < lines.length && /^>\s?/.test(lines[i])) buf.push(lines[i++].replace(/^>\s?/, ""));
+      out.push(`<blockquote>${buf.filter(Boolean).map((p) => `<p>${inline(p)}</p>`).join("")}</blockquote>`);
+      continue;
+    }
+    if (/^(---|___|\*\*\*)\s*$/.test(l)) { closeList(); out.push("<hr>"); i++; continue; }
+
+    const ul = l.match(/^\s*[-*]\s+(.*)$/);
+    const ol = l.match(/^\s*\d+\.\s+(.*)$/);
+    if (ul || ol) {
+      const want = ul ? "ul" : "ol";
+      if (list !== want) { closeList(); out.push(`<${want}>`); list = want; }
+      out.push(`<li>${inline((ul ?? ol)[1])}</li>`);
+      i++; continue;
+    }
+    if (!l.trim()) { closeList(); i++; continue; }
+
+    closeList();
+    const buf = [l];
+    i++;
+    while (i < lines.length && lines[i].trim() && !/^(#|>|\||```|---|\s*[-*]\s|\s*\d+\.\s)/.test(lines[i]))
+      buf.push(lines[i++]);
+    out.push(`<p>${inline(buf.join(" "))}</p>`);
+  }
+  closeList();
+  return out.join("\n");
+}
+
+// --- routing --------------------------------------------------------------
+const navEl = document.getElementById("nav");
+const tocEl = document.getElementById("toc");
+const docEl = document.getElementById("doc");
+
+navEl.innerHTML = DOCS.map(([f, t]) => `<a href="#${f}" data-f="${f}">${t}</a>`).join("");
+
+async function show(file) {
+  for (const a of navEl.children) a.toggleAttribute("aria-current", a.dataset.f === file);
+  docEl.innerHTML = `<p class="loading">Loading ${file}…</p>`;
+  try {
+    const r = await fetch(`./${file}`, { cache: "no-cache" });
+    if (!r.ok) throw new Error(`${r.status}`);
+    docEl.innerHTML = render(await r.text());
+  } catch (e) {
+    docEl.innerHTML = `<p class="loading">Could not load ${file} (${e.message}).</p>`;
+    tocEl.innerHTML = ""; return;
+  }
+  tocEl.innerHTML = [...docEl.querySelectorAll("h2")]
+    .map((h) => `<a href="#${h.id}">${h.textContent}</a>`).join("");
+  window.scrollTo(0, 0);
+}
+
+const route = () => show(location.hash.slice(1) || DOCS[0][0]);
+addEventListener("hashchange", () => {
+  const h = location.hash.slice(1);
+  if (DOCS.some(([f]) => f === h)) route();
+});
+route();
+</script>
+</body>
+</html>

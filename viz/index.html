@@ -10,6 +10,13 @@
     --ink:#e7e5e0; --dim:#8a929f; --dimmer:#5c6470; --gold:#c9a227;
     --measure:64ch;
   }
+  nav.top{position:sticky;top:0;z-index:20;display:flex;gap:20px;align-items:center;
+    padding:12px 24px;margin:0 -24px 0;background:rgba(16,19,24,.94);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--edge)}
+  nav.top a{color:var(--dim);text-decoration:none;font:500 13.5px/1 ui-sans-serif,sans-serif}
+  nav.top a:hover,nav.top a[aria-current]{color:var(--gold)}
+  nav.top .brand{font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--dimmer);margin-right:6px}
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
   body{
@@ -118,6 +125,12 @@
 </style>
 </head>
 <body>
+<nav class="top">
+  <span class="brand">Water Emblem</span>
+  <a href="./" aria-current="page">Visualiser</a>
+  <a href="../docs/">Research</a>
+  <a href="https://github.com/ezrabales/waterEmblem">Repo</a>
+</nav>
 <div class="shell">
 
 <header>
