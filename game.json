@@ -1,5 +1,9 @@
 {
   "name": "Water Emblem",
-  "description": "Turn-based grid tactics. Rules visualiser: movement flood fill, terrain costs per movement type, attack range, threat overlay and combat forecast, all computed live by the real shared modules.",
-  "entry": "viz/"
+  "description": "Two-player turn-based grid tactics. Movement is a budget over terrain that costs different amounts per unit type; combat resolves through a shared rules module the client and server both import, so the forecast cannot lie.",
+  "repo": "https://github.com/ezrabales/waterEmblem",
+  "links": [
+    { "label": "Visualiser", "path": "viz/" },
+    { "label": "Research & design notes", "path": "docs/" }
+  ]
 }
