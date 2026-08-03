@@ -237,11 +237,14 @@ doubles if attacker.spd - defender.spd &gt;= 4</code></pre>
   <table><thead><tr><th>Attacker</th><th>Target</th><th>Damage</th><th>Rounds to kill</th><th>Takes back</th></tr></thead><tbody>
     <tr><td>Cavalry</td><td>Infantry</td><td>4 ×2</td><td>3</td><td>5</td></tr>
     <tr><td>Infantry</td><td>Archer</td><td>5</td><td>4</td><td>2</td></tr>
-    <tr><td>Archer</td><td>Cavalry</td><td>5</td><td>5</td><td>0</td></tr>
+    <tr><td>Archer</td><td>Cavalry</td><td>11 <b>eff</b></td><td>2</td><td>0</td></tr>
     <tr><td>Archer</td><td>Infantry</td><td>2</td><td>10</td><td>5</td></tr>
   </tbody></table>
   <p>Cavalry beats infantry, infantry beats archer, archer beats cavalry. The last row looks broken but is the correct half of the loop: archers should not beat armour.</p>
-  <div class="why"><b>Why we know</b>None of this was designed on paper. The numbers were run, the first pass gave archers 1 damage against infantry (sixteen rounds to kill), the fix made cavalry dominant, and the triangle fell out of correcting that. Runnable rules before a user interface is the whole reason it was caught in an evening.</div>
+  <p>That third leg did not survive being measured. Archers were dealing 5 to cavalry and losing the matchup <b>97.9%</b> of the time, because range 2 does not beat move 7 — cavalry threatens eight tiles to the archer's six, so it always chooses the fight and the archer never gets to kite. The beat-relation was not a cycle at all but a strict order, with an exact Nash mix of <b>100% cavalry</b>.</p>
+  <p>Archers now deal <b>effective damage</b> to horses: a flat +6 attack against horse-type units, shown as <b>EFF</b> in the forecast. That is 11 instead of 5, which is exactly lethal in two hits, and it flips the matchup to <b>84.9%</b>. The cycle now holds in 1v1 duels and in whole games, and every leg survives being re-measured under four differently-tuned AI opponents.</p>
+  <div class="why"><b>Why we know</b>None of this was designed on paper, and the correction was not either. The numbers were run: 8000 mirrored-seat duels per candidate value, then whole games on this map under four AI personalities, reporting only conclusions all four agreed on. The lever turned out to be a cliff rather than a dial — three consecutive bonus values changed nothing, then one step changed everything — and the 1v1 and the four-a-side armies wanted numbers five steps apart. Tuning by feel would have found 43%, called it a failure, and stopped.</div>
+  <div class="why"><b>What is still wrong</b>Every leg is near-absolute: 99.4%, 99.6%, 100%. Army composition decides the match and positioning barely matters, which is a worse failure than the one just fixed. Two of those three legs were already that severe. Compressing them is a rebalance of the whole stat block, so it is written down rather than done quietly.</div>
 
   <h2>Colour</h2>
   <h3>Factions and overlays cannot share hues</h3>
