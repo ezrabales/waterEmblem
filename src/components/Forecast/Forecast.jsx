@@ -74,6 +74,7 @@ const Forecast = ({ attacker, defender, attackerTile, defenderTile }) => {
       <div className="forecast-stats">
         <div className="forecast-cell forecast-stripe">
           {f.damage}
+          {f.effective && <span className="forecast-eff">EFF</span>}
           {f.doubles && <span className="forecast-dbl">×2</span>}
         </div>
         <div className="forecast-key forecast-stripe">Damage</div>
@@ -81,6 +82,7 @@ const Forecast = ({ attacker, defender, attackerTile, defenderTile }) => {
           {f.canCounter ? (
             <>
               {f.counterDoubles && <span className="forecast-dbl">×2</span>}
+              {f.counterEffective && <span className="forecast-eff">EFF</span>}
               {f.counterDamage}
             </>
           ) : (
@@ -116,9 +118,11 @@ const Forecast = ({ attacker, defender, attackerTile, defenderTile }) => {
           <b>{verdict[1]}</b>
         </span>
         <span>
-          {f.canCounter
-            ? `Counters at range ${UNIT_TYPES[defender.type].range}`
-            : "No counter (out of range)"}
+          {f.effective
+            ? `Effective vs ${UNIT_TYPES[defender.type].label.toLowerCase()}`
+            : f.canCounter
+              ? `Counters at range ${UNIT_TYPES[defender.type].range}`
+              : "No counter (out of range)"}
         </span>
       </div>
     </div>

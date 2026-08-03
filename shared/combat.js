@@ -17,13 +17,28 @@ export const forecast = (attacker, defender, opts = {}) => {
   const d = statsOf(defender, opts.defenderTile);
   const dist = distance(attacker, defender);
 
+  // Effective damage: a flat attack bonus against a movement type, keyed off
+  // how the target moves rather than what it is called.
+  //
+  // Fire Emblem multiplies weapon might (x2/x3) instead. We measured that and
+  // it does not work here: our numbers are small enough that a multiplier can
+  // only land on 12 damage or 21, and cavalry has 22 HP. Twelve kills it in two
+  // hits and archers then beat cavalry 100-0; the next step down takes three
+  // hits and archers lose. A multiplier cannot express the value in between,
+  // and that value is the whole design. A flat bonus can.
+  const effect = (from, against) => from.effective?.[against.moveType] ?? 0;
+
   const inRange = dist <= a.range;
-  const damage = Math.max(1, a.atk - d.def);
+  const effective = effect(a, d);
+  const damage = Math.max(1, a.atk + effective - d.def);
   const hit = clamp(a.hit - d.avo, 0, 100);
   const doubles = a.spd - d.spd >= 4;
 
   const canCounter = dist <= d.range;
-  const counterDamage = canCounter ? Math.max(1, d.atk - a.def) : null;
+  const counterEffective = canCounter ? effect(d, a) : 0;
+  const counterDamage = canCounter
+    ? Math.max(1, d.atk + counterEffective - a.def)
+    : null;
   const counterHit = canCounter ? clamp(d.hit - a.avo, 0, 100) : null;
   const counterDoubles = canCounter && d.spd - a.spd >= 4;
 
@@ -34,6 +49,11 @@ export const forecast = (attacker, defender, opts = {}) => {
     hit,
     crit: a.crit,
     doubles,
+    // The forecast panel has to say WHY the number is large, or an effective
+    // hit reads as a bug. The client renders these; the rules decide them.
+    effective: effective > 0,
+    effectiveBonus: effective,
+    counterEffective: counterEffective > 0,
     canCounter,
     counterDamage,
     counterHit,

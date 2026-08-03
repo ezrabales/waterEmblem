@@ -37,12 +37,16 @@ A move is undoable until it changes what the player *knows* or what the world
 *contains*. Reveal, resource gain and dice roll are the three lock triggers.
 Until one fires, a move is UI state, not game state.
 
-**4. The unit triangle currently has only two legs.**
-Measured, not surveyed. Cavalry's move 7 plus doubling defeats the archer's
-range 2, so the archer-beats-cavalry leg does not exist and the triangle reads
-"cavalry > everything > archer". All-cavalry beats all-infantry 119–1. This one
-changes the *game* rather than the code, and it is the first finding here that
-came from running the rules rather than reading about someone else's.
+**4. The unit triangle had only two legs. It has three now.**
+Measured, not surveyed — the first finding here that came from running the rules
+rather than reading about someone else's. Cavalry's move 7 defeats the archer's
+range 2 outright, so the archer-beats-cavalry leg did not exist and the triangle
+read "cavalry > everything > archer", with a Nash mix of 100% cavalry. Archers
+now deal effective damage to horses (`effective: { horse: 6 }` in `units.js`),
+which flips that matchup from 2.1% to 84.9% and makes the beat-relation an
+actual cycle at both 1v1 and army scale. The remaining problem — that all three
+legs are near-absolute at ~99% — is recorded in the note and deliberately not
+acted on.
 
 ## Method and honesty
 

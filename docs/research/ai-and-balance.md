@@ -292,8 +292,9 @@ the initial benchmark… shine in their niche."*
 
 ## What this already found in our game
 
-**The unit triangle has only two legs.** Design intent is cavalry > infantry >
-archer > cavalry. The third leg does not exist:
+**The unit triangle had only two legs.** *Fixed — see "The fix" below; these are
+the numbers that prompted the change.* Design intent is cavalry > infantry >
+archer > cavalry, and the third leg did not exist:
 
 ```
 Pure stat-block exchange, open plain, attacker initiates:
@@ -323,6 +324,77 @@ to act on. The "archer is weak" conclusion is softer — it was measured on one
 map under annihilation rules, which is the single-dimension benchmark Pfau shows
 reversing. Before buffing the archer, measure it on a second axis: chokepoint
 defence at the bridges, or a seize objective.
+
+## The fix, and what it cost to verify
+
+The archer now gets a **flat +6 attack against horse-type units** (`effective:
+{ horse: 6 }` in `units.js`), so it deals 11 to cavalry instead of 5. Three
+things about getting there are worth more than the number itself.
+
+**The lever was all-or-nothing, not a dial.** Measured 1v1 across 8000
+mirrored-seat duels per step:
+
+```
+bonus    +0   +1   +2   +3   +4   +5    +6    +7
+damage    5    6    7    8    9   10    11    12
+arc>cav  2%  11%  11%  43%  43%  43%   85%   85%
+```
+
+Nothing below 11 damage flips the matchup, because 11 is exactly lethal in two
+hits against 22 HP. Three consecutive values produce identical behaviour, then
+one step changes everything. Tuning by feel would have found 43% and concluded
+the approach did not work.
+
+**The 1v1 and the 4v4 wanted different numbers, and the gap was not small.**
+Massed archers beat massed cavalry from +1 onward, because range 2 with no
+counter scales super-linearly with unit count — four archers delete a cavalry
+before it arrives regardless of the duel matchup. Fixing only the army-scale
+number would have left the *stated* triangle false: a player asking "can my
+archer take that cavalry?" would still lose. We tuned to the 1v1 threshold and
+then confirmed the army scale followed.
+
+**The measurement tool was lying, in the most dangerous direction.** The Nash
+mix in `matrix.mjs` was computed by replicator dynamics, which converges only
+when one strategy *dominates*. On a genuine cycle it orbits the equilibrium
+forever and reports whatever phase it stopped at. So it read correctly on the
+broken game (100% cavalry) and wrongly on the fixed one — 5.4/33.9/60.6 for a
+matrix whose true equilibrium is 26.0/37.2/36.8. For an antisymmetric 3×3 the
+equilibrium is closed-form: the kernel of `A`, proportional to `(a, b, c)`. It
+now computes that instead.
+
+### Result
+
+The beat-relation is a cycle at both scales, and every leg is invariant across
+all four agent personalities:
+
+```
+1v1 duels (10,000 mirrored-seat games per cell)
+  cavalry beats infantry   99.4%      unchanged
+  infantry beats archer   100.0%      unchanged
+  archer  beats cavalry    84.9%      was 2.1%
+  Nash mix: 26.0 / 37.2 / 36.8        was 100% cavalry, no cycle
+
+full games, pure armies (600 side-swapped games per cell, 4 personalities)
+  all cavalry  vs all infantry   100 / 100 / 100 / 98.2   invariant
+  all infantry vs all archer    99.5 / 99.7 / 99.8 / 99.0  invariant
+  all archer   vs all cavalry    100 / 100 / 100 / 100     invariant
+```
+
+A mixed army against pure cavalry went from **16.7% to ~99%** — before the fix,
+massing the best unit beat combined arms; now it loses to it.
+
+### The part that is still wrong
+
+**Every leg is near-absolute.** 99.4%, 99.6%, 100%. That means army composition
+decides the game and positioning barely matters, which is a worse failure than
+the one just fixed and it is not what this change caused — two of those three
+legs were already at that severity. A triangle where each edge is 99% is
+rock-paper-scissors with the tactics layer switched off.
+
+Fixing it means compressing all three edges toward something like 60–70%, which
+is a rebalance of the whole stat block rather than one line, and it should be a
+deliberate design decision rather than a consequence of this one. Recorded here,
+not acted on.
 
 ## A methodology warning that cost an hour
 

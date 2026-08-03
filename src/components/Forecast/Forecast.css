@@ -224,6 +224,27 @@
   margin: 0 6px 0 0;
 }
 
+/* Effective damage. Deliberately not gold: doubling and effectiveness stack on
+   the same number, and if both badges shared a colour the player could not tell
+   which one made it big. */
+.forecast-eff {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  vertical-align: 1px;
+  color: #7fd1a8;
+  border: 1px solid #7fd1a8;
+  border-radius: 3px;
+  font:
+    600 10px/1.4 ui-sans-serif,
+    sans-serif;
+  letter-spacing: 0.08em;
+}
+
+.forecast-them .forecast-eff {
+  margin: 0 6px 0 0;
+}
+
 .forecast-verdict {
   display: flex;
   justify-content: space-between;
